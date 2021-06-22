@@ -1,0 +1,2583 @@
+
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/**
+ *
+ * @author eren5
+ */
+public class Doktor_Ana_Ekran extends javax.swing.JFrame {
+
+    /**
+     * Creates new form Doktor_Ana_Ekran
+     */
+    public Doktor_Ana_Ekran() {
+        initComponents();
+       
+    }
+    
+      Connection conn = null ; PreparedStatement pst = null ; ResultSet rs = null ;
+
+      
+       String  h_sql ; 
+   
+       
+       public Doktor_Ana_Ekran(String sql) {
+        initComponents();
+      
+        h_sql = sql ; 
+        isim(sql);
+        tarih();
+        Toolkit toolkit=getToolkit();
+        Dimension size=toolkit.getScreenSize();
+        setLocation(size.width/2-getWidth()/2,size.height/2-getHeight()/2);
+       
+    
+    }
+       
+       
+        public Doktor_Ana_Ekran(String sql , int i) {
+        initComponents();
+        h_sql = sql ; 
+            System.out.println("1");
+        isim(sql);
+        
+            System.out.println("2"); 
+        
+        tarih();
+            System.out.println("3");
+            Toolkit toolkit=getToolkit();
+        Dimension size=toolkit.getScreenSize();
+        setLocation(size.width/2-getWidth()/2,size.height/2-getHeight()/2);
+    }
+       
+    
+    
+    
+     public void poliklinikbulma(){
+        
+        try{
+            
+            conn = db.connect_db();
+            String sql = "SELECT * FROM POLIKLINIK WHERE POLIKLINIK_ID = '" + poliklinik_id + "'";
+            pst  = conn.prepareStatement(sql);
+            rs = pst.executeQuery() ; 
+            
+            while(rs.next()){
+                txt_hb_poliklinik.setText(rs.getString("POLIKLINIK_AD"));
+                txt_mhb_dpoliklinik.setText(rs.getString("POLIKLINIK_AD"));
+                
+                
+                txt_mhb_dpoliklinik.setEnabled(false);
+            }
+            
+           
+            
+        }catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, ex);
+        }finally{
+            try{
+               conn.close();
+            }catch (Exception ex) {
+                
+            }
+        }
+        
+        
+    }
+    
+    
+     int d_id ;
+     int poliklinik_id ; 
+     public void isim(String sql){
+         
+
+         try{
+             conn = db.connect_db(); 
+            // String sql  = "SELECT * FROM HASTA WHERE HASTA_ID = '" + a + "'" ;
+             pst = conn.prepareStatement(sql);
+             rs = pst.executeQuery() ; 
+             System.out.println(sql);
+           
+             while(rs.next()){
+                 d_id = Integer.parseInt(rs.getString("DOKTOR_ID"));
+                 txt_adsoyad.setText(rs.getString("DOKTOR_AD")  + " " + rs.getString("DOKTOR_SOYAD"));
+                 
+              txt_hb_ad.setText(rs.getString("DOKTOR_AD"));
+              txt_hb_soyad.setText(rs.getString("DOKTOR_SOYAD"));
+              txt_hb_telefon.setText(rs.getString("TELEFON_NO"));
+             
+              txt_hb_email.setText(rs.getString("E_MAIL"));
+              poliklinik_id  = Integer.valueOf(rs.getString("POLIKLINIK_ID"));
+              txt_hb_adres.setText(rs.getString("ADRES"));
+              
+             
+             }
+             
+           
+             
+         }catch (Exception ex) {
+             JOptionPane.showMessageDialog(null,ex);
+         }finally{
+             try{
+                 conn.close();
+             }catch (Exception ex) {
+                 
+             }
+         }
+         
+              poliklinikbulma();
+         
+     }
+     
+     int gun ; 
+     int ay ;
+     int yıl ;
+     String tarih; 
+    
+    public void tarih(){
+        
+    SimpleDateFormat dateFormat=new SimpleDateFormat("dd/MM/yyyy");
+    
+    Date guntarih= new Date();
+    
+    String deger = dateFormat.format(guntarih);
+   
+    
+    String[] bol = deger.split("/");
+    int[] cevir = new int[bol.length] ; 
+        
+        for (int i = 0; i < bol.length; i++) {
+       
+            cevir[i] = Integer.valueOf(bol[i]);
+       
+        }
+        
+            gun = cevir[0]; 
+            ay = cevir[1];
+            yıl = cevir[2];
+            
+            
+       tarih = deger;
+
+    }
+    
+   
+     
+     
+      int aktifsutun = 0 ;
+    int gecmissutun = 0 ; 
+    
+      void aktifrandevu(){
+        
+        try{
+        
+            DefaultTableModel tbl = (DefaultTableModel) tbl_aktifrandevu.getModel();
+            
+            while (tbl.getRowCount() > 0) {
+                // eğer ki tabloda 1 satır bile veri varsa sorgusu yaptık
+                tbl.removeRow(0);  // tüm satırları sil dedik 
+            }
+            
+            //veritabanı işlemleri 
+            
+            conn = db.connect_db();
+            String sql = "SELECT * FROM RANDEVU_ISLEM WHERE DOKTOR_ID = '" + d_id +  "'" ; 
+            pst = conn.prepareStatement(sql);
+            rs = pst.executeQuery();
+            
+            ResultSetMetaData rsmd = rs.getMetaData(); 
+            aktifsutun = rsmd.getColumnCount(); 
+            String[] data = new String[aktifsutun]; 
+          
+            while(rs.next()){
+                System.out.println(rs.getString("HASTA_ID"));
+              
+                
+                 for (int i = 0; i < data.length; i++) {
+                  data[i] = rs.getString(i+1);
+
+        
+              }
+           
+                 DefaultTableModel tblModel = (DefaultTableModel) tbl_aktifrandevu.getModel(); 
+                 tblModel.addRow(data); // verileri ekledik 
+          
+            }  
+          
+        }catch (Exception ex) {
+            
+        }finally{
+            try{
+                conn.close();
+            }catch (Exception ex) {
+                
+            }
+        }
+        
+        
+    }
+      
+      
+      
+       void gecmisrandevu(){
+        System.out.println(h_id);
+        try{
+
+            DefaultTableModel tbl = (DefaultTableModel) tbl_gecmisrandevu.getModel();
+
+            while (tbl.getRowCount() > 0) {
+                // eğer ki tabloda 1 satır bile veri varsa sorgusu yaptık
+                tbl.removeRow(0);  // tüm satırları sil dedik 
+            }
+
+            //veritabanı işlemleri 
+
+            conn = db.connect_db();
+            String sql = "SELECT * FROM GECMİS_RANDEVU WHERE DOKTOR_ID = '" + d_id +  "'" ; 
+            pst = conn.prepareStatement(sql);
+            rs = pst.executeQuery();
+            
+            
+
+            ResultSetMetaData rsmd = rs.getMetaData(); // sütün sayısını alma işlemi 
+            aktifsutun = rsmd.getColumnCount(); // sütun sayısı alındı 
+            String[] data = new String[aktifsutun]; // sütun boyutunda bir String boyut oluşturduk
+
+            while(rs.next()){
+
+                
+                
+                
+                for (int i = 0; i < data.length; i++) {
+                  data[i] = rs.getString(i+1);
+
+
+              }
+
+                 DefaultTableModel tblModel = (DefaultTableModel) tbl_gecmisrandevu.getModel(); 
+                 tblModel.addRow(data); // verileri ekledik 
+
+            }
+
+        }catch (Exception ex) {
+
+        }finally{
+            try{
+                conn.close();
+            }catch (Exception ex) {
+
+            }
+        }
+        
+        
+    }
+       
+       
+       
+       
+        int tanısutun = 0 ; 
+        void tanıgecmis(){
+        System.out.println(h_id);
+        try{
+
+            DefaultTableModel tbl = (DefaultTableModel) tbl_gecmistanı.getModel();
+
+            while (tbl.getRowCount() > 0) {
+                // eğer ki tabloda 1 satır bile veri varsa sorgusu yaptık
+                tbl.removeRow(0);  // tüm satırları sil dedik 
+            }
+
+            //veritabanı işlemleri 
+
+            conn = db.connect_db();
+            String sql = "SELECT * FROM TANI_ISLEM WHERE DOKTOR_ID = '" + d_id +  "'" ; 
+            pst = conn.prepareStatement(sql);
+            rs = pst.executeQuery();
+            
+            
+
+            ResultSetMetaData rsmd = rs.getMetaData(); // sütün sayısını alma işlemi 
+            tanısutun = rsmd.getColumnCount(); // sütun sayısı alındı 
+            String[] data = new String[tanısutun]; // sütun boyutunda bir String boyut oluşturduk
+
+            while(rs.next()){
+
+                
+                
+                
+                for (int i = 0; i < data.length; i++) {
+                  data[i] = rs.getString(i+1);
+
+
+              }
+
+                 DefaultTableModel tblModel = (DefaultTableModel) tbl_gecmistanı.getModel(); 
+                 tblModel.addRow(data); // verileri ekledik 
+
+            }
+
+        }catch (Exception ex) {
+
+        }finally{
+            try{
+                conn.close();
+            }catch (Exception ex) {
+
+            }
+        }
+        
+        
+    }
+       
+       
+     
+     
+     
+     
+    void gecmis(){
+        int a =0 ;
+        int ınsert = 0 ; 
+        System.out.println("yazııı");
+        
+        try{
+            System.out.println("1.");
+            conn = db.connect_db() ; 
+            String sql = "SELECT * FROM RANDEVU_ISLEM WHERE DOKTOR_ID = '" + d_id + "' " ;
+            pst = conn.prepareStatement(sql);
+            rs = pst.executeQuery() ; 
+            while(rs.next()){
+                a++ ; 
+            }
+        }catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, ex +".");
+        }finally{
+            try{
+                conn.close();
+            }catch (Exception ex) {
+                
+            }
+        }
+        
+        String[] il = new String[a] ;
+        String[] idd = new String[a] ;
+        String[] ilce = new String[a] ;
+        String[] hastane = new String[a] ;
+        String[] poliklinik = new String[a] ;
+        String[] r_tarih = new String[a] ;
+        String[] doktor_idd = new String[a] ;
+        String[] hasta_idd = new String[a] ;
+        String[] r_saatt = new String[a] ;
+        boolean [] dogrulama = new boolean[a];
+        
+         try{
+             System.out.println("2.");
+            conn = db.connect_db() ; 
+            String sql = "SELECT * FROM RANDEVU_ISLEM WHERE DOKTOR_ID = '" + d_id + "' " ;
+            pst = conn.prepareStatement(sql);
+            rs = pst.executeQuery() ; 
+     
+            int i = 0 ;
+            while(rs.next()){
+                 SimpleDateFormat dateFormat=new SimpleDateFormat("dd/MM/yyyy");
+                 Date now= new Date();
+               
+                   
+                    dogrulama[i] = false ;
+                    idd[i] = rs.getString("RANDEVU_ID");
+                    il[i] = rs.getString("RANDEVU_IL");
+                    ilce[i] = rs.getString("RANDEVU_ILCE");
+                    hastane[i] = rs.getString("HASTANE_AD");
+                    poliklinik[i] = rs.getString("RANDEVU_POLIKLINIK");
+                    r_tarih[i] = rs.getString("RANDEVU_TARIH");
+                    doktor_idd[i] = rs.getString("DOKTOR_ID");
+                    hasta_idd[i] = rs.getString("HASTA_ID");
+                    r_saatt[i] = rs.getString("RANDEVU_SAAT");  
+                   
+                    Date date = dateFormat.parse(r_tarih[i]);
+            
+                    
+                    if (now.getTime() > date.getTime()) 
+                    {
+                        dogrulama[i] = true ; 
+                        
+                        if (now.getYear() == date.getYear()) {
+                            if (now.getMonth() == date.getMonth()) {
+                                if (now.getDay() == date.getDay()) {
+                                      dogrulama[i] = false ;
+                                }
+                            }
+                        }
+                        
+                    }
+                    
+                     i++;  
+                    
+            }
+        }catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, ex +".");
+        }finally{
+            try{
+                conn.close();
+            }catch (Exception ex) {
+                
+            }
+        }
+         
+         
+        
+        for (int i = 0; i < a; i++) {
+            if (dogrulama[i] == true) {
+                
+                  try{
+                      System.out.println("a : " + i );
+                conn=db.connect_db();
+                String sql = "INSERT INTO GECMİS_RANDEVU (GECMİS_IL,GECMİS_ILCE,HASTANE_AD,GECMİS_POLIKLINIK,GECMİS_TARIH,DOKTOR_ID,HASTA_ID,GECMİS_SAAT) VALUES (?,?,?,?,?,?,?,?)" ;
+                pst = conn.prepareStatement(sql);
+                pst.setString(1, il[i]);
+                pst.setString(2, ilce[i]);
+                pst.setString(3, hastane[i]);
+                pst.setString(4, poliklinik[i]);
+                pst.setString(5, r_tarih[i]);
+                pst.setString(6, doktor_idd[i]);
+                pst.setString(7, hasta_idd[i]);
+                pst.setString(8, r_saatt[i]);
+                pst.execute();
+                gecmisrandevu();
+            }
+            catch (Exception ex) {
+                   JOptionPane.showMessageDialog(null,ex );
+            }
+            finally{
+                try{
+                    conn.close();
+                }catch (Exception ex) {
+
+                }
+            }
+                
+             }
+            
+            else{
+                continue ; 
+            }
+            
+        }
+        
+        for (int i = 0; i < a; i++) {
+            
+            if (dogrulama[i] == true) {
+                
+                  try{
+                conn=db.connect_db();
+                String sql = "DELETE FROM RANDEVU_ISLEM WHERE RANDEVU_ID=?" ;
+                pst = conn.prepareStatement(sql);
+                pst.setString(1, idd[i]);
+                pst.execute();
+                aktifrandevu();
+              
+            }
+            catch (Exception ex) {
+                JOptionPane.showMessageDialog(null,ex );
+            }
+            finally{
+                try{
+                    conn.close();
+                }
+                catch (Exception ex) {
+
+                }
+            }
+                
+            }
+            
+        }
+        
+        
+        
+       
+        
+    }
+      
+      
+    
+    
+    
+    
+      int onaylanansutun;
+      void onaylanantest(){
+        
+        try{
+        
+            DefaultTableModel tbl = (DefaultTableModel) tbl_labonaylanantest.getModel();
+            
+            while (tbl.getRowCount() > 0) {
+                // eğer ki tabloda 1 satır bile veri varsa sorgusu yaptık
+                tbl.removeRow(0);  // tüm satırları sil dedik 
+            }
+            
+            //veritabanı işlemleri 
+            
+            conn = db.connect_db();
+            String sql = "SELECT * FROM LAB_SONUC WHERE DOKTOR_ID = '" + d_id +  "'" ; 
+            pst = conn.prepareStatement(sql);
+            rs = pst.executeQuery();
+            
+            ResultSetMetaData rsmd = rs.getMetaData(); 
+             onaylanansutun = rsmd.getColumnCount(); 
+            String[] data = new String[onaylanansutun]; 
+          
+            while(rs.next()){
+              
+                
+                 for (int i = 0; i < data.length; i++) {
+                  data[i] = rs.getString(i+1);
+
+        
+              }
+           
+                 DefaultTableModel tblModel = (DefaultTableModel) tbl_labonaylanantest.getModel(); 
+                 tblModel.addRow(data); // verileri ekledik 
+          
+            }  
+          
+        }catch (Exception ex) {
+            
+        }finally{
+            try{
+                conn.close();
+            }catch (Exception ex) {
+                
+            }
+        }
+        
+        
+    }
+      
+      
+      
+      
+      
+      
+        int beklenilensutun = 0 ; 
+        void beklenilentest(){
+        
+        try{
+        
+            DefaultTableModel tbl = (DefaultTableModel) tbl_labbeklenilentest.getModel();
+            
+            while (tbl.getRowCount() > 0) {
+                // eğer ki tabloda 1 satır bile veri varsa sorgusu yaptık
+                tbl.removeRow(0);  // tüm satırları sil dedik 
+            }
+            
+            //veritabanı işlemleri 
+            
+            conn = db.connect_db();
+            String sql = "SELECT * FROM LAB_GIRIS WHERE DOKTOR_ID = '" + d_id +  "'" ; 
+            pst = conn.prepareStatement(sql);
+            rs = pst.executeQuery();
+            
+            ResultSetMetaData rsmd = rs.getMetaData(); 
+            beklenilensutun = rsmd.getColumnCount(); 
+            String[] data = new String[beklenilensutun]; 
+          
+            while(rs.next()){
+                System.out.println(rs.getString("HASTA_ID"));
+              
+                
+                 for (int i = 0; i < data.length; i++) {
+                  data[i] = rs.getString(i+1);
+
+        
+              }
+           
+                 DefaultTableModel tblModel = (DefaultTableModel) tbl_labbeklenilentest.getModel(); 
+                 tblModel.addRow(data); // verileri ekledik 
+          
+            }  
+          
+        }catch (Exception ex) {
+            
+        }finally{
+            try{
+                conn.close();
+            }catch (Exception ex) {
+                
+            }
+        }
+        
+        
+    }
+    
+    
+    
+    
+      
+      
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
+    private void initComponents() {
+
+        jPanel1 = new javax.swing.JPanel();
+        btn_anasayfa = new javax.swing.JButton();
+        btn_profil = new javax.swing.JButton();
+        btn_randevu = new javax.swing.JButton();
+        txt_adsoyad = new javax.swing.JTextField();
+        btn_cıkıs = new javax.swing.JButton();
+        tb_doktor = new javax.swing.JTabbedPane();
+        jPanel2 = new javax.swing.JPanel();
+        btn_muayene = new javax.swing.JButton();
+        btn_labaratuvar = new javax.swing.JButton();
+        jPanel3 = new javax.swing.JPanel();
+        jPanel13 = new javax.swing.JPanel();
+        txt_hb_telefon = new javax.swing.JTextField();
+        jLabel10 = new javax.swing.JLabel();
+        jLabel15 = new javax.swing.JLabel();
+        btn3 = new javax.swing.JButton();
+        txt_hb_dogumtarihi = new javax.swing.JTextField();
+        txt_hb_email = new javax.swing.JTextField();
+        txt_hb_ad = new javax.swing.JTextField();
+        jLabel16 = new javax.swing.JLabel();
+        jLabel17 = new javax.swing.JLabel();
+        txt_hb_poliklinik = new javax.swing.JTextField();
+        txt_hb_soyad = new javax.swing.JTextField();
+        jButton5 = new javax.swing.JButton();
+        jLabel18 = new javax.swing.JLabel();
+        jButton9 = new javax.swing.JButton();
+        jLabel20 = new javax.swing.JLabel();
+        jLabel21 = new javax.swing.JLabel();
+        txt_hb_adres = new javax.swing.JTextField();
+        jPanel5 = new javax.swing.JPanel();
+        tbl_tanıgecmis = new javax.swing.JTabbedPane();
+        jPanel6 = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        tbl_aktifrandevu = new javax.swing.JTable();
+        jPanel9 = new javax.swing.JPanel();
+        jLabel9 = new javax.swing.JLabel();
+        txt_tcsorgula = new javax.swing.JTextField();
+        btn_ara = new javax.swing.JButton();
+        jPanel8 = new javax.swing.JPanel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        tbl_gecmisrandevu = new javax.swing.JTable();
+        jPanel18 = new javax.swing.JPanel();
+        jScrollPane6 = new javax.swing.JScrollPane();
+        tbl_gecmistanı = new javax.swing.JTable();
+        jPanel14 = new javax.swing.JPanel();
+        jPanel16 = new javax.swing.JPanel();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        tbl_muayene_aktifrandevu = new javax.swing.JTable();
+        btn_sonuc = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        txt_muayeneid = new javax.swing.JTextField();
+        jPanel15 = new javax.swing.JPanel();
+        jPanel7 = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        txt_mhb_hdogumtarihi = new javax.swing.JTextField();
+        txt_mhb_hcinsiyet = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
+        txt_mhb_htc = new javax.swing.JTextField();
+        txt_mhb_hsoyad = new javax.swing.JTextField();
+        jLabel8 = new javax.swing.JLabel();
+        txt_mhb_had = new javax.swing.JTextField();
+        jPanel10 = new javax.swing.JPanel();
+        jLabel22 = new javax.swing.JLabel();
+        txt_mhb_dad = new javax.swing.JTextField();
+        jLabel19 = new javax.swing.JLabel();
+        txt_mhb_dsoyad = new javax.swing.JTextField();
+        jLabel23 = new javax.swing.JLabel();
+        txt_mhb_dpoliklinik = new javax.swing.JTextField();
+        btn_tanıgönder = new javax.swing.JButton();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        btn_testiste = new javax.swing.JButton();
+        btn_tanıkoy = new javax.swing.JButton();
+        btn_testekle = new javax.swing.JButton();
+        btn_bitti = new javax.swing.JButton();
+        jLabel11 = new javax.swing.JLabel();
+        cb_test = new javax.swing.JComboBox<>();
+        txt_test = new javax.swing.JTextField();
+        txt_recete = new javax.swing.JTextField();
+        txt_tanı = new javax.swing.JTextField();
+        jPanel20 = new javax.swing.JPanel();
+        jTabbedPane2 = new javax.swing.JTabbedPane();
+        jPanel17 = new javax.swing.JPanel();
+        jPanel21 = new javax.swing.JPanel();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        tbl_labonaylanantest = new javax.swing.JTable();
+        btn_lab_sonuc = new javax.swing.JButton();
+        jLabel12 = new javax.swing.JLabel();
+        txt_lab_hasta = new javax.swing.JTextField();
+        jPanel12 = new javax.swing.JPanel();
+        jPanel11 = new javax.swing.JPanel();
+        jScrollPane9 = new javax.swing.JScrollPane();
+        tbl_labbeklenilentest = new javax.swing.JTable();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jPanel1.setBackground(new java.awt.Color(204, 204, 204));
+
+        btn_anasayfa.setBackground(new java.awt.Color(204, 204, 204));
+        btn_anasayfa.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        btn_anasayfa.setForeground(new java.awt.Color(0, 0, 0));
+        btn_anasayfa.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Resimler/home.png"))); // NOI18N
+        btn_anasayfa.setText("Anasayfa");
+        btn_anasayfa.setBorder(null);
+        btn_anasayfa.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_anasayfaActionPerformed(evt);
+            }
+        });
+
+        btn_profil.setBackground(new java.awt.Color(204, 204, 204));
+        btn_profil.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        btn_profil.setForeground(new java.awt.Color(0, 0, 0));
+        btn_profil.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Resimler/user.png"))); // NOI18N
+        btn_profil.setText("Hesap Bilgileri");
+        btn_profil.setBorder(null);
+        btn_profil.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_profilActionPerformed(evt);
+            }
+        });
+
+        btn_randevu.setBackground(new java.awt.Color(204, 204, 204));
+        btn_randevu.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        btn_randevu.setForeground(new java.awt.Color(0, 0, 0));
+        btn_randevu.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Resimler/information.png"))); // NOI18N
+        btn_randevu.setText("Randevu Bilgileri");
+        btn_randevu.setBorder(null);
+        btn_randevu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_randevuActionPerformed(evt);
+            }
+        });
+
+        txt_adsoyad.setBackground(new java.awt.Color(0, 204, 204));
+        txt_adsoyad.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        txt_adsoyad.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txt_adsoyadActionPerformed(evt);
+            }
+        });
+
+        btn_cıkıs.setBackground(new java.awt.Color(204, 204, 204));
+        btn_cıkıs.setFont(new java.awt.Font("Dialog", 1, 15)); // NOI18N
+        btn_cıkıs.setForeground(new java.awt.Color(51, 204, 255));
+        btn_cıkıs.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Resimler/exit.png"))); // NOI18N
+        btn_cıkıs.setText("Çıkış");
+        btn_cıkıs.setBorder(null);
+        btn_cıkıs.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_cıkısActionPerformed(evt);
+            }
+        });
+
+        jPanel2.setBackground(new java.awt.Color(204, 204, 204));
+        jPanel2.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        btn_muayene.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        btn_muayene.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Resimler/examination_4.png"))); // NOI18N
+        btn_muayene.setText("Muayene");
+        btn_muayene.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_muayeneActionPerformed(evt);
+            }
+        });
+        jPanel2.add(btn_muayene, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 340, 253, 80));
+
+        btn_labaratuvar.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        btn_labaratuvar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Resimler/flask_1.png"))); // NOI18N
+        btn_labaratuvar.setText("Laboratuvar");
+        btn_labaratuvar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_labaratuvarActionPerformed(evt);
+            }
+        });
+        jPanel2.add(btn_labaratuvar, new org.netbeans.lib.awtextra.AbsoluteConstraints(556, 344, 300, 80));
+
+        tb_doktor.addTab("tab1", jPanel2);
+
+        jPanel3.setBackground(new java.awt.Color(204, 204, 204));
+
+        jPanel13.setBackground(new java.awt.Color(204, 204, 204));
+
+        txt_hb_telefon.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        txt_hb_telefon.setText(" ");
+
+        jLabel10.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jLabel10.setForeground(new java.awt.Color(0, 0, 0));
+        jLabel10.setText("E_MAİL :");
+
+        jLabel15.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jLabel15.setForeground(new java.awt.Color(0, 0, 0));
+        jLabel15.setText("Doğum Tarihi : ");
+
+        btn3.setBackground(new java.awt.Color(204, 204, 255));
+        btn3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Resimler/previous.png"))); // NOI18N
+        btn3.setBorder(null);
+        btn3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn3btn2ActionPerformed(evt);
+            }
+        });
+
+        txt_hb_dogumtarihi.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+
+        txt_hb_email.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+
+        txt_hb_ad.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+
+        jLabel16.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jLabel16.setForeground(new java.awt.Color(0, 0, 0));
+        jLabel16.setText("Poliklinik : ");
+
+        jLabel17.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jLabel17.setForeground(new java.awt.Color(0, 0, 0));
+        jLabel17.setText("Soyad : ");
+
+        txt_hb_poliklinik.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+
+        txt_hb_soyad.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        txt_hb_soyad.setText(" ");
+
+        jButton5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Resimler/arrows.png"))); // NOI18N
+        jButton5.setText("Güncelle");
+
+        jLabel18.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jLabel18.setForeground(new java.awt.Color(0, 0, 0));
+        jLabel18.setText("Telefon : ");
+
+        jButton9.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Resimler/trash.png"))); // NOI18N
+        jButton9.setText("Sil");
+
+        jLabel20.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jLabel20.setForeground(new java.awt.Color(0, 0, 0));
+        jLabel20.setText("Ad : ");
+
+        jLabel21.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jLabel21.setForeground(new java.awt.Color(0, 0, 0));
+        jLabel21.setText("Adres : ");
+
+        javax.swing.GroupLayout jPanel13Layout = new javax.swing.GroupLayout(jPanel13);
+        jPanel13.setLayout(jPanel13Layout);
+        jPanel13Layout.setHorizontalGroup(
+            jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel13Layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(jButton9, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(53, 53, 53))
+            .addGroup(jPanel13Layout.createSequentialGroup()
+                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel13Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(btn3))
+                    .addGroup(jPanel13Layout.createSequentialGroup()
+                        .addGap(39, 39, 39)
+                        .addComponent(jLabel20, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txt_hb_ad, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanel13Layout.createSequentialGroup()
+                                .addComponent(jLabel21, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(txt_hb_adres, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jButton5))))
+                .addContainerGap(61, Short.MAX_VALUE))
+            .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel13Layout.createSequentialGroup()
+                    .addGap(49, 49, 49)
+                    .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel13Layout.createSequentialGroup()
+                            .addGap(33, 33, 33)
+                            .addComponent(jLabel18)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                            .addComponent(txt_hb_telefon, javax.swing.GroupLayout.PREFERRED_SIZE, 257, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(jPanel13Layout.createSequentialGroup()
+                            .addGap(163, 163, 163)
+                            .addComponent(jLabel17)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(txt_hb_soyad, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(jPanel13Layout.createSequentialGroup()
+                            .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(jLabel10)
+                                .addComponent(jLabel15)
+                                .addComponent(jLabel16))
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(txt_hb_email, javax.swing.GroupLayout.PREFERRED_SIZE, 264, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(txt_hb_dogumtarihi, javax.swing.GroupLayout.PREFERRED_SIZE, 264, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(txt_hb_poliklinik, javax.swing.GroupLayout.PREFERRED_SIZE, 264, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addContainerGap(93, Short.MAX_VALUE)))
+        );
+        jPanel13Layout.setVerticalGroup(
+            jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel13Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(btn3)
+                .addGap(62, 62, 62)
+                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txt_hb_ad, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel20))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 258, Short.MAX_VALUE)
+                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel21)
+                    .addComponent(txt_hb_adres, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton9)
+                    .addComponent(jButton5))
+                .addGap(29, 29, 29))
+            .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel13Layout.createSequentialGroup()
+                    .addGap(108, 108, 108)
+                    .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(txt_hb_soyad, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel17))
+                    .addGap(31, 31, 31)
+                    .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel18)
+                        .addComponent(txt_hb_telefon, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGap(64, 64, 64)
+                    .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel15)
+                        .addComponent(txt_hb_dogumtarihi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGap(18, 18, 18)
+                    .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel10)
+                        .addComponent(txt_hb_email, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGap(27, 27, 27)
+                    .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel16)
+                        .addComponent(txt_hb_poliklinik, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addContainerGap(105, Short.MAX_VALUE)))
+        );
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGap(287, 287, 287)
+                .addComponent(jPanel13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(396, Short.MAX_VALUE))
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGap(108, 108, 108)
+                .addComponent(jPanel13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(336, Short.MAX_VALUE))
+        );
+
+        tb_doktor.addTab("tab2", jPanel3);
+
+        jPanel5.setBackground(new java.awt.Color(204, 204, 204));
+
+        jPanel6.setBackground(new java.awt.Color(204, 204, 204));
+
+        tbl_aktifrandevu.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "RANDEVU_ID", "İL", "İLÇE", "HASTANE", "POLİKLİNİK", "TARİH", "DOKTOR_ID", "HASTA_ID", "SAAT"
+            }
+        ));
+        tbl_aktifrandevu.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tbl_aktifrandevuMouseClicked(evt);
+            }
+        });
+        jScrollPane2.setViewportView(tbl_aktifrandevu);
+
+        jPanel9.setBackground(new java.awt.Color(204, 204, 204));
+        jPanel9.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "HASTA ARAMA ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 18), new java.awt.Color(0, 0, 0))); // NOI18N
+
+        jLabel9.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jLabel9.setForeground(new java.awt.Color(0, 0, 0));
+        jLabel9.setText("Hasta TC : ");
+
+        txt_tcsorgula.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txt_tcsorgulaActionPerformed(evt);
+            }
+        });
+
+        btn_ara.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        btn_ara.setForeground(new java.awt.Color(0, 0, 0));
+        btn_ara.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Resimler/loupe (1).png"))); // NOI18N
+        btn_ara.setText("ARA");
+        btn_ara.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_araActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel9Layout = new javax.swing.GroupLayout(jPanel9);
+        jPanel9.setLayout(jPanel9Layout);
+        jPanel9Layout.setHorizontalGroup(
+            jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel9Layout.createSequentialGroup()
+                .addGap(166, 166, 166)
+                .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(txt_tcsorgula, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(btn_ara, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(712, Short.MAX_VALUE))
+        );
+        jPanel9Layout.setVerticalGroup(
+            jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel9Layout.createSequentialGroup()
+                .addGap(61, 61, 61)
+                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel9)
+                    .addComponent(txt_tcsorgula, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btn_ara))
+                .addContainerGap(123, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
+        jPanel6.setLayout(jPanel6Layout);
+        jPanel6Layout.setHorizontalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane2)
+            .addComponent(jPanel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        jPanel6Layout.setVerticalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(22, Short.MAX_VALUE))
+        );
+
+        tbl_tanıgecmis.addTab("Güncel Randevular", jPanel6);
+
+        jPanel8.setBackground(new java.awt.Color(204, 204, 204));
+
+        tbl_gecmisrandevu.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "RANDEVU_ID", "İL", "İLÇE", "HASTANE", "POLİKLİNİK", "TARİH", "DOKTOR_ID", "HASTA_ID", "SAAT"
+            }
+        ));
+        tbl_gecmisrandevu.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tbl_gecmisrandevuMouseClicked(evt);
+            }
+        });
+        jScrollPane3.setViewportView(tbl_gecmisrandevu);
+
+        javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
+        jPanel8.setLayout(jPanel8Layout);
+        jPanel8Layout.setHorizontalGroup(
+            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane3)
+        );
+        jPanel8Layout.setVerticalGroup(
+            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel8Layout.createSequentialGroup()
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 295, Short.MAX_VALUE))
+        );
+
+        tbl_tanıgecmis.addTab("Geçmiş  Randevular", jPanel8);
+
+        tbl_gecmistanı.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "TANI_ID", "İL", "İLÇE", "HASTANE", "POLİKLİNİK", "TARİH", "DOKTOR_ID", "HASTA_ID", "SAAT", "TEST", "TEST SONUCU", "TANI", "REÇETE"
+            }
+        ));
+        tbl_gecmistanı.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tbl_gecmistanıMouseClicked(evt);
+            }
+        });
+        jScrollPane6.setViewportView(tbl_gecmistanı);
+
+        javax.swing.GroupLayout jPanel18Layout = new javax.swing.GroupLayout(jPanel18);
+        jPanel18.setLayout(jPanel18Layout);
+        jPanel18Layout.setHorizontalGroup(
+            jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane6, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 1200, Short.MAX_VALUE)
+        );
+        jPanel18Layout.setVerticalGroup(
+            jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel18Layout.createSequentialGroup()
+                .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 402, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 268, Short.MAX_VALUE))
+        );
+
+        tbl_tanıgecmis.addTab("Tanı Geçmişi ", jPanel18);
+
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(tbl_tanıgecmis)
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addGap(39, 39, 39)
+                .addComponent(tbl_tanıgecmis, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(205, Short.MAX_VALUE))
+        );
+
+        tb_doktor.addTab("tab4", jPanel5);
+
+        jPanel14.setBackground(new java.awt.Color(204, 204, 204));
+
+        jPanel16.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Hasta Seç\n", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 18), new java.awt.Color(0, 0, 0))); // NOI18N
+
+        tbl_muayene_aktifrandevu.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "RANDEVU_ID", "İL", "İLÇE", "HASTANE", "POLİKLİNİK", "TARİH", "DOKTOR_ID", "HASTA_ID", "SAAT"
+            }
+        ));
+        tbl_muayene_aktifrandevu.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tbl_muayene_aktifrandevuMouseClicked(evt);
+            }
+        });
+        jScrollPane4.setViewportView(tbl_muayene_aktifrandevu);
+
+        btn_sonuc.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        btn_sonuc.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Resimler/choose (1).png"))); // NOI18N
+        btn_sonuc.setText("Hasta Seç");
+        btn_sonuc.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_sonucActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jLabel1.setText("HASTA ID : ");
+
+        txt_muayeneid.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+
+        javax.swing.GroupLayout jPanel16Layout = new javax.swing.GroupLayout(jPanel16);
+        jPanel16.setLayout(jPanel16Layout);
+        jPanel16Layout.setHorizontalGroup(
+            jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel16Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txt_muayeneid, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(61, 61, 61)
+                .addComponent(btn_sonuc, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(83, 83, 83))
+            .addComponent(jScrollPane4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 1195, Short.MAX_VALUE)
+        );
+        jPanel16Layout.setVerticalGroup(
+            jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel16Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE)
+                .addGap(47, 47, 47)
+                .addGroup(jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btn_sonuc)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(txt_muayeneid, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+        );
+
+        javax.swing.GroupLayout jPanel14Layout = new javax.swing.GroupLayout(jPanel14);
+        jPanel14.setLayout(jPanel14Layout);
+        jPanel14Layout.setHorizontalGroup(
+            jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel16, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        jPanel14Layout.setVerticalGroup(
+            jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel14Layout.createSequentialGroup()
+                .addGap(113, 113, 113)
+                .addComponent(jPanel16, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(428, Short.MAX_VALUE))
+        );
+
+        tb_doktor.addTab("tab5", jPanel14);
+
+        jPanel15.setBackground(new java.awt.Color(204, 204, 204));
+
+        jPanel7.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Hasta Bilgileri", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 18), new java.awt.Color(0, 0, 0))); // NOI18N
+
+        jLabel2.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jLabel2.setForeground(new java.awt.Color(0, 0, 0));
+        jLabel2.setText("Cinsiyet : ");
+
+        jLabel5.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jLabel5.setForeground(new java.awt.Color(0, 0, 0));
+        jLabel5.setText("TC : ");
+
+        jLabel3.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jLabel3.setForeground(new java.awt.Color(0, 0, 0));
+        jLabel3.setText("Soyad : ");
+
+        txt_mhb_hdogumtarihi.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        txt_mhb_hdogumtarihi.setForeground(new java.awt.Color(0, 0, 0));
+
+        txt_mhb_hcinsiyet.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        txt_mhb_hcinsiyet.setForeground(new java.awt.Color(0, 0, 0));
+
+        jLabel4.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jLabel4.setForeground(new java.awt.Color(0, 0, 0));
+        jLabel4.setText("Ad : ");
+
+        txt_mhb_htc.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        txt_mhb_htc.setForeground(new java.awt.Color(0, 0, 0));
+
+        txt_mhb_hsoyad.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        txt_mhb_hsoyad.setForeground(new java.awt.Color(0, 0, 0));
+        txt_mhb_hsoyad.setText(" ");
+
+        jLabel8.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jLabel8.setForeground(new java.awt.Color(0, 0, 0));
+        jLabel8.setText("Doğum Tarihi : ");
+
+        txt_mhb_had.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        txt_mhb_had.setForeground(new java.awt.Color(0, 0, 0));
+
+        javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
+        jPanel7.setLayout(jPanel7Layout);
+        jPanel7Layout.setHorizontalGroup(
+            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel7Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel2)
+                    .addComponent(jLabel8)
+                    .addComponent(jLabel5)
+                    .addComponent(jLabel3)
+                    .addComponent(jLabel4))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(txt_mhb_hdogumtarihi)
+                    .addGroup(jPanel7Layout.createSequentialGroup()
+                        .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(txt_mhb_htc)
+                            .addComponent(txt_mhb_had)
+                            .addComponent(txt_mhb_hsoyad, javax.swing.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(txt_mhb_hcinsiyet))
+                .addContainerGap())
+        );
+        jPanel7Layout.setVerticalGroup(
+            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel7Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel4)
+                    .addComponent(txt_mhb_had, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(txt_mhb_hsoyad, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(25, 25, 25)
+                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5)
+                    .addComponent(txt_mhb_htc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel8)
+                    .addComponent(txt_mhb_hdogumtarihi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(28, 28, 28)
+                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(txt_mhb_hcinsiyet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jPanel10.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Doktor Bilgileri ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 18), new java.awt.Color(0, 0, 0))); // NOI18N
+
+        jLabel22.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jLabel22.setForeground(new java.awt.Color(0, 0, 0));
+        jLabel22.setText("Ad : ");
+
+        txt_mhb_dad.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+
+        jLabel19.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jLabel19.setForeground(new java.awt.Color(0, 0, 0));
+        jLabel19.setText("Soyad : ");
+
+        txt_mhb_dsoyad.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        txt_mhb_dsoyad.setText(" ");
+
+        jLabel23.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jLabel23.setForeground(new java.awt.Color(0, 0, 0));
+        jLabel23.setText("Poliklinik : ");
+
+        txt_mhb_dpoliklinik.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+
+        javax.swing.GroupLayout jPanel10Layout = new javax.swing.GroupLayout(jPanel10);
+        jPanel10.setLayout(jPanel10Layout);
+        jPanel10Layout.setHorizontalGroup(
+            jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel10Layout.createSequentialGroup()
+                .addGap(35, 35, 35)
+                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel19)
+                    .addComponent(jLabel22)
+                    .addComponent(jLabel23))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(txt_mhb_dsoyad, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
+                    .addComponent(txt_mhb_dpoliklinik)
+                    .addComponent(txt_mhb_dad))
+                .addContainerGap())
+        );
+        jPanel10Layout.setVerticalGroup(
+            jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel10Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel22)
+                    .addComponent(txt_mhb_dad, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel19)
+                    .addComponent(txt_mhb_dsoyad, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel23)
+                    .addComponent(txt_mhb_dpoliklinik, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        btn_tanıgönder.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        btn_tanıgönder.setForeground(new java.awt.Color(0, 0, 0));
+        btn_tanıgönder.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Resimler/share (1).png"))); // NOI18N
+        btn_tanıgönder.setText("Gönder ");
+        btn_tanıgönder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_tanıgönderActionPerformed(evt);
+            }
+        });
+
+        jLabel6.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jLabel6.setForeground(new java.awt.Color(0, 0, 0));
+        jLabel6.setText("Tanı ");
+
+        jLabel7.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jLabel7.setForeground(new java.awt.Color(0, 0, 0));
+        jLabel7.setText("Recete");
+
+        btn_testiste.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        btn_testiste.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Resimler/bacteria.png"))); // NOI18N
+        btn_testiste.setText("Test İste");
+        btn_testiste.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_testisteActionPerformed(evt);
+            }
+        });
+
+        btn_tanıkoy.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        btn_tanıkoy.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Resimler/checkup (1).png"))); // NOI18N
+        btn_tanıkoy.setText(" Tanı Koy");
+        btn_tanıkoy.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_tanıkoyActionPerformed(evt);
+            }
+        });
+
+        btn_testekle.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        btn_testekle.setForeground(new java.awt.Color(0, 0, 0));
+        btn_testekle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Resimler/plus.png"))); // NOI18N
+        btn_testekle.setText("Test Ekle ");
+        btn_testekle.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_testekleActionPerformed(evt);
+            }
+        });
+
+        btn_bitti.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        btn_bitti.setForeground(new java.awt.Color(0, 0, 0));
+        btn_bitti.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Resimler/check (1).png"))); // NOI18N
+        btn_bitti.setText("Bitti ");
+        btn_bitti.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_bittiActionPerformed(evt);
+            }
+        });
+
+        jLabel11.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jLabel11.setForeground(new java.awt.Color(0, 0, 0));
+        jLabel11.setText("İstenilen Test");
+
+        cb_test.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        cb_test.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "TEST", "Alerji Testi ", "BiyoKimya Testi ", "Horman Testi ", "İdrar Testi ", "Kan Testi ", "Covid-19 Testi " }));
+
+        javax.swing.GroupLayout jPanel15Layout = new javax.swing.GroupLayout(jPanel15);
+        jPanel15.setLayout(jPanel15Layout);
+        jPanel15Layout.setHorizontalGroup(
+            jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel15Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel15Layout.createSequentialGroup()
+                        .addComponent(btn_testiste, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(btn_tanıkoy, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(jPanel15Layout.createSequentialGroup()
+                        .addGroup(jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel15Layout.createSequentialGroup()
+                                .addGap(256, 256, 256)
+                                .addComponent(jLabel6)
+                                .addGap(201, 201, 201)
+                                .addComponent(jLabel7)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel15Layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 208, Short.MAX_VALUE)
+                                .addGroup(jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel15Layout.createSequentialGroup()
+                                        .addGroup(jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                            .addComponent(btn_testekle, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(cb_test, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(btn_bitti, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGap(60, 60, 60))
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel15Layout.createSequentialGroup()
+                                        .addComponent(txt_tanı, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(44, 44, 44)))
+                                .addGroup(jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(txt_test, javax.swing.GroupLayout.PREFERRED_SIZE, 179, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(txt_recete, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(200, 200, 200))
+                            .addGroup(jPanel15Layout.createSequentialGroup()
+                                .addGap(323, 323, 323)
+                                .addComponent(btn_tanıgönder, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel15Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jLabel11)
+                        .addGap(250, 250, 250))))
+        );
+        jPanel15Layout.setVerticalGroup(
+            jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel15Layout.createSequentialGroup()
+                .addGap(115, 115, 115)
+                .addComponent(jLabel11)
+                .addGroup(jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel15Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(txt_tanı, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txt_recete, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addComponent(btn_tanıgönder)
+                        .addGap(31, 31, 31))
+                    .addGroup(jPanel15Layout.createSequentialGroup()
+                        .addGap(1, 1, 1)
+                        .addGroup(jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(jPanel15Layout.createSequentialGroup()
+                                .addGroup(jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(jPanel15Layout.createSequentialGroup()
+                                        .addComponent(cb_test, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(26, 26, 26)
+                                        .addComponent(btn_testekle)
+                                        .addGap(31, 31, 31)
+                                        .addComponent(btn_bitti))
+                                    .addComponent(txt_test, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 112, Short.MAX_VALUE)
+                                .addGroup(jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(jLabel7, javax.swing.GroupLayout.Alignment.TRAILING)))
+                            .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(48, 48, 48)))
+                .addGroup(jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btn_testiste)
+                    .addComponent(btn_tanıkoy))
+                .addContainerGap(248, Short.MAX_VALUE))
+        );
+
+        tb_doktor.addTab("tab6", jPanel15);
+
+        jPanel20.setBackground(new java.awt.Color(204, 204, 204));
+
+        jPanel21.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Hasta Seç\n", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 18), new java.awt.Color(0, 0, 0))); // NOI18N
+
+        tbl_labonaylanantest.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "LAB_ID", "İL", "İLÇE", "HASTANE", "POLİKLİNİK", "TARİH", "DOKTOR_ID", "HASTA_ID", "SAAT", "TEST", "TEST_SONUCU"
+            }
+        ));
+        tbl_labonaylanantest.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tbl_labonaylanantestMouseClicked(evt);
+            }
+        });
+        jScrollPane5.setViewportView(tbl_labonaylanantest);
+
+        btn_lab_sonuc.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        btn_lab_sonuc.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Resimler/choose (1).png"))); // NOI18N
+        btn_lab_sonuc.setText("Hasta Seç");
+        btn_lab_sonuc.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_lab_sonucActionPerformed(evt);
+            }
+        });
+
+        jLabel12.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jLabel12.setText("HASTA ID : ");
+
+        txt_lab_hasta.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+
+        javax.swing.GroupLayout jPanel21Layout = new javax.swing.GroupLayout(jPanel21);
+        jPanel21.setLayout(jPanel21Layout);
+        jPanel21Layout.setHorizontalGroup(
+            jPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel21Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txt_lab_hasta, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(btn_lab_sonuc, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(108, 108, 108))
+            .addComponent(jScrollPane5, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 994, Short.MAX_VALUE)
+        );
+        jPanel21Layout.setVerticalGroup(
+            jPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel21Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 343, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(126, 126, 126)
+                .addGroup(jPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btn_lab_sonuc)
+                    .addComponent(jLabel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(txt_lab_hasta, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+        );
+
+        javax.swing.GroupLayout jPanel17Layout = new javax.swing.GroupLayout(jPanel17);
+        jPanel17.setLayout(jPanel17Layout);
+        jPanel17Layout.setHorizontalGroup(
+            jPanel17Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel21, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        jPanel17Layout.setVerticalGroup(
+            jPanel17Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel17Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel21, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(109, Short.MAX_VALUE))
+        );
+
+        jTabbedPane2.addTab("Onaylanan Testler", jPanel17);
+
+        jPanel11.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "BEKLENİLEN TESTLER", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 18), new java.awt.Color(0, 0, 0))); // NOI18N
+
+        tbl_labbeklenilentest.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "LAB_ID", "İL", "İLÇE", "HASTANE", "POLİKLİNİK", "TARİH", "DOKTOR_İD", "HASTA_İD", "SAAT", "TEST"
+            }
+        ));
+        jScrollPane9.setViewportView(tbl_labbeklenilentest);
+
+        javax.swing.GroupLayout jPanel11Layout = new javax.swing.GroupLayout(jPanel11);
+        jPanel11.setLayout(jPanel11Layout);
+        jPanel11Layout.setHorizontalGroup(
+            jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane9, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 994, Short.MAX_VALUE)
+        );
+        jPanel11Layout.setVerticalGroup(
+            jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel11Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 560, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout jPanel12Layout = new javax.swing.GroupLayout(jPanel12);
+        jPanel12.setLayout(jPanel12Layout);
+        jPanel12Layout.setHorizontalGroup(
+            jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel11, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        jPanel12Layout.setVerticalGroup(
+            jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel12Layout.createSequentialGroup()
+                .addComponent(jPanel11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 63, Short.MAX_VALUE))
+        );
+
+        jTabbedPane2.addTab("Beklenilen Testler", jPanel12);
+
+        javax.swing.GroupLayout jPanel20Layout = new javax.swing.GroupLayout(jPanel20);
+        jPanel20.setLayout(jPanel20Layout);
+        jPanel20Layout.setHorizontalGroup(
+            jPanel20Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel20Layout.createSequentialGroup()
+                .addGap(55, 55, 55)
+                .addComponent(jTabbedPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 1009, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(141, Short.MAX_VALUE))
+        );
+        jPanel20Layout.setVerticalGroup(
+            jPanel20Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel20Layout.createSequentialGroup()
+                .addGap(20, 20, 20)
+                .addComponent(jTabbedPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 693, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(226, Short.MAX_VALUE))
+        );
+
+        tb_doktor.addTab("tab7", jPanel20);
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(45, 45, 45)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(tb_doktor, javax.swing.GroupLayout.PREFERRED_SIZE, 1210, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(btn_anasayfa, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(32, 32, 32)
+                        .addComponent(btn_profil, javax.swing.GroupLayout.PREFERRED_SIZE, 239, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(54, 54, 54)
+                        .addComponent(btn_randevu, javax.swing.GroupLayout.PREFERRED_SIZE, 243, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(88, 88, 88)
+                        .addComponent(txt_adsoyad, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(86, 86, 86)
+                        .addComponent(btn_cıkıs, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(74, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(34, 34, 34)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btn_anasayfa, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btn_profil, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btn_randevu, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txt_adsoyad, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btn_cıkıs, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(tb_doktor, javax.swing.GroupLayout.PREFERRED_SIZE, 966, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(32, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+
+        pack();
+    }// </editor-fold>                        
+
+    private void btn_anasayfaActionPerformed(java.awt.event.ActionEvent evt) {                                             
+
+        tb_doktor.setSelectedIndex(0);
+    }                                            
+
+    private void btn_profilActionPerformed(java.awt.event.ActionEvent evt) {                                           
+
+        tb_doktor.setSelectedIndex(1);
+       
+    }                                          
+
+    private void btn_randevuActionPerformed(java.awt.event.ActionEvent evt) {                                            
+
+        gecmis();
+        aktifrandevu();
+        gecmisrandevu();
+        tanıgecmis();
+        
+        tb_doktor.setSelectedIndex(3);
+    }                                           
+
+    private void txt_adsoyadActionPerformed(java.awt.event.ActionEvent evt) {                                            
+        // TODO add your handling code here:
+    }                                           
+
+    private void btn_cıkısActionPerformed(java.awt.event.ActionEvent evt) {                                          
+
+        new HRS().setVisible(true);
+        this.hide();
+    }                                         
+
+    
+     void muayene_aktifrandevu(){
+        
+        try{
+        
+            DefaultTableModel tbl = (DefaultTableModel) tbl_muayene_aktifrandevu.getModel();
+            
+            while (tbl.getRowCount() > 0) {
+                // eğer ki tabloda 1 satır bile veri varsa sorgusu yaptık
+                tbl.removeRow(0);  // tüm satırları sil dedik 
+            }
+            
+            //veritabanı işlemleri 
+            
+            System.out.println(tarih);
+            conn = db.connect_db();
+            String sql = "SELECT * FROM RANDEVU_ISLEM WHERE RANDEVU_TARIH = '" + tarih +  "'" ; 
+            pst = conn.prepareStatement(sql);
+            rs = pst.executeQuery();
+            
+            ResultSetMetaData rsmd = rs.getMetaData(); 
+            aktifsutun = rsmd.getColumnCount(); 
+            String[] data = new String[aktifsutun]; 
+          
+            while(rs.next()){
+                System.out.println(rs.getString("RANDEVU_TARIH"));
+              
+                
+                 for (int i = 0; i < data.length; i++) {
+                  data[i] = rs.getString(i+1);
+
+        
+              }
+           
+                 DefaultTableModel tblModel = (DefaultTableModel) tbl_muayene_aktifrandevu.getModel(); 
+                 tblModel.addRow(data); // verileri ekledik 
+          
+            }  
+          
+        }catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, ex);
+        }finally{
+            try{
+                conn.close();
+            }catch (Exception ex) {
+                
+            }
+        }
+        
+        
+    }
+     
+     
+     
+       int  h_id ; 
+      public void tc_id(){
+
+          try{
+              
+              conn = db.connect_db() ; 
+              String sql = "SELECT * FROM HASTA WHERE TC = '" + txt_tcsorgula.getText()+ "'" ;
+              pst   = conn.prepareStatement(sql); 
+              rs = pst.executeQuery() ; 
+              
+              while(rs.next()) {
+                  
+                  h_id =Integer.valueOf(rs.getString("HASTA_ID")) ;
+                  System.out.println("id :  : " + h_id);
+                  
+                  
+              }
+              
+              
+              
+          }catch (Exception ex) {
+              JOptionPane.showMessageDialog(null, ex);
+          }finally{
+              try{
+                  conn.close();
+              }catch (Exception ex) {
+                  
+              }
+          }
+          
+          
+      }
+     
+      
+      
+      
+      void tc_sorgu(){
+          
+                tc_id();
+                System.out.println(" id : ::  " + h_id);
+          
+        try{
+        
+            DefaultTableModel tbl = (DefaultTableModel) tbl_aktifrandevu.getModel();
+            
+            while (tbl.getRowCount() > 0) {
+                // eğer ki tabloda 1 satır bile veri varsa sorgusu yaptık
+                tbl.removeRow(0);  // tüm satırları sil dedik 
+            }
+            
+            //veritabanı işlemleri 
+            
+            conn = db.connect_db();
+            String sql = "SELECT * FROM RANDEVU_ISLEM WHERE HASTA_ID = '" + h_id +  "' and DOKTOR_ID = '" + d_id + "'" ; 
+            pst = conn.prepareStatement(sql);
+            rs = pst.executeQuery();
+            
+            ResultSetMetaData rsmd = rs.getMetaData(); 
+            aktifsutun = rsmd.getColumnCount(); 
+            String[] data = new String[aktifsutun]; 
+          
+            while(rs.next()){
+              
+                
+                 for (int i = 0; i < data.length; i++) {
+                  data[i] = rs.getString(i+1);
+
+        
+              }
+           
+                 DefaultTableModel tblModel = (DefaultTableModel) tbl_aktifrandevu.getModel(); 
+                 tblModel.addRow(data); // verileri ekledik 
+          
+            }  
+          
+        }catch (Exception ex) {
+            
+        }finally{
+            try{
+                conn.close();
+            }catch (Exception ex) {
+                
+            }
+        }
+        
+        
+    }
+
+    
+    
+    
+    private void btn_muayeneActionPerformed(java.awt.event.ActionEvent evt) {                                            
+         muayene_aktifrandevu();
+        
+        tb_doktor.setSelectedIndex(4);
+        muayenetestkilit();
+        muayenetanıkilit();
+        
+        
+    }                                           
+
+    private void btn_labaratuvarActionPerformed(java.awt.event.ActionEvent evt) {                                                
+
+        
+        beklenilentest();
+        onaylanantest();
+        
+        tb_doktor.setSelectedIndex(6);
+
+    }                                               
+
+    private void tbl_aktifrandevuMouseClicked(java.awt.event.MouseEvent evt) {                                              
+
+        // TODO add your handling code here:
+    }                                             
+
+    private void txt_tcsorgulaActionPerformed(java.awt.event.ActionEvent evt) {                                              
+
+        tc_id();
+    }                                             
+
+    private void btn_araActionPerformed(java.awt.event.ActionEvent evt) {                                        
+
+        tc_sorgu();
+
+    }                                       
+
+
+    String randevu_id;
+    String doktor_il;
+    String doktor_ilce;
+    String doktor_hastane;
+    String doktor_poliklinik;
+    String doktor_tarih;
+    String hasta_id;
+    String doktor_id;
+    String doktor_saat;
+    private void tbl_muayene_aktifrandevuMouseClicked(java.awt.event.MouseEvent evt) {                                                      
+        
+          String data []=new String [aktifsutun];
+        for (int i = 0; i <aktifsutun ; i++) {
+            data [i]=tbl_muayene_aktifrandevu.getValueAt(tbl_muayene_aktifrandevu.getSelectedRow(),i ).toString();
+            System.out.println(data[i]);
+        }
+        
+        randevu_id = data[0];
+        doktor_il = data[1];
+        doktor_ilce = data[2];
+        doktor_hastane = data[3];
+        doktor_poliklinik= data[4];
+        doktor_tarih = data[5];
+        doktor_id = data[6];
+        hasta_id = data[7];
+        doktor_saat = data[8];
+        
+                txt_muayeneid.setText(data[7]);
+         
+       
+        
+    }                                                     
+
+    
+     public void hastabilgi(int id){
+        try{
+            
+            conn = db.connect_db()  ;
+            String sql = "SELECT * FROM HASTA WHERE HASTA_ID = '" + id +  "'";
+            pst = conn.prepareStatement(sql);
+            rs = pst.executeQuery() ;
+            
+            while(rs.next()){
+                
+                txt_mhb_had.setText(rs.getString("HASTA_AD"));
+                txt_mhb_hsoyad.setText(rs.getString("HASTA_SOYAD"));
+                txt_mhb_htc.setText(rs.getString("TC"));
+                txt_mhb_hdogumtarihi.setText(rs.getString("HASTA_DOGUMTARIHI"));
+                txt_mhb_hcinsiyet.setText(rs.getString("CINSIYET"));
+                
+                txt_mhb_had.setEnabled(false);
+                txt_mhb_hsoyad.setEnabled(false);
+                txt_mhb_htc.setEnabled(false);
+                txt_mhb_hdogumtarihi.setEnabled(false);
+                txt_mhb_hcinsiyet.setEnabled(false);
+                
+                
+            }
+            
+            
+        }catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, ex);
+        }finally{
+            try{
+                conn.close();
+            }catch (Exception ex) {
+                
+            }
+        }
+    }
+    
+    public void doktorbilgi(int id){
+        try{
+            
+            conn = db.connect_db() ; 
+            String sql = "SELECT * FROM DOKTOR WHERE DOKTOR_ID = ' "+ id + "'" ;
+            pst = conn.prepareStatement(sql);
+            rs = pst.executeQuery() ; 
+            
+            while(rs.next()){
+                txt_mhb_dad.setText(rs.getString("DOKTOR_AD"));
+                txt_mhb_dsoyad.setText(rs.getString("DOKTOR_SOYAD"));
+                
+                
+                txt_mhb_dad.setEnabled(false);
+                txt_mhb_dsoyad.setEnabled(false);
+                
+            }
+            
+        }catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, ex);
+        }finally{
+            try{
+                conn.close();
+            }catch (Exception ex) {
+                
+            }
+        }
+                poliklinikbulma();
+    }
+    
+    
+    
+    private void btn_sonucActionPerformed(java.awt.event.ActionEvent evt) {                                          
+
+        tb_doktor.setSelectedIndex(5);
+        hastabilgi(Integer.valueOf(hasta_id));
+        doktorbilgi(d_id);
+        
+        
+
+    }                                         
+
+    private void btn3btn2ActionPerformed(java.awt.event.ActionEvent evt) {                                         
+        // TODO add your handling code here:
+    }                                        
+
+    private void tbl_gecmisrandevuMouseClicked(java.awt.event.MouseEvent evt) {                                               
+        // TODO add your handling code here:
+    }                                              
+
+    
+    
+    void tanı(){
+        
+        if (tanı==true) {
+         
+             try{
+           conn = db.connect_db()  ;
+           String sql = "INSERT INTO TANI_ISLEM (TANI_IL,TANI_ILCE, HASTANE_AD , TANI_POLIKLINIK , TANI_TARIH , DOKTOR_ID , HASTA_ID , TANI_SAAT , TANI_TEST , TANI_TESTSONUC , TANI_TANI , TANI_RECETE) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)  " ; 
+           pst = conn.prepareStatement(sql);
+           
+           
+           
+           pst.setString(1,doktor_il);
+           pst.setString(2,doktor_ilce);
+           pst.setString(3,doktor_hastane);
+           pst.setString(4,doktor_poliklinik);
+           pst.setString(5,doktor_tarih);
+           pst.setString(6,doktor_id);
+           pst.setString(7,hasta_id);
+           pst.setString(8,doktor_saat);
+           pst.setString(9,"Test yapılmadı");
+           pst.setString(10,"Test Yapılmadı");
+           pst.setString(11,txt_tanı.getText());
+           pst.setString(12,txt_recete.getText());
+           pst.execute();
+           JOptionPane.showMessageDialog(null, "Muayene Edildi");
+           
+       }catch (Exception ex) {
+       
+           JOptionPane.showMessageDialog(null, ex);
+       
+       }finally{
+           try{
+               conn.close();
+           }catch (Exception ex) {
+               
+           }
+       }
+             
+              try{
+                conn=db.connect_db();
+                String sql = "INSERT INTO GECMİS_RANDEVU (GECMİS_IL,GECMİS_ILCE,HASTANE_AD,GECMİS_POLIKLINIK,GECMİS_TARIH,DOKTOR_ID,HASTA_ID,GECMİS_SAAT) VALUES (?,?,?,?,?,?,?,?)" ;
+                pst = conn.prepareStatement(sql);
+              pst.setString(1, doktor_il);
+             pst.setString(2, doktor_ilce);
+             pst.setString(3, doktor_hastane);
+             pst.setString(4, doktor_poliklinik);
+             pst.setString(5, doktor_tarih);
+             pst.setString(6, doktor_id);
+             pst.setString(7, hasta_id);
+             pst.setString(8, doktor_saat);
+                pst.execute();
+                gecmisrandevu();
+            }
+            catch (Exception ex) {
+                   JOptionPane.showMessageDialog(null,ex );
+            }
+            finally{
+                try{
+                    conn.close();
+                }catch (Exception ex) {
+
+                }
+            }
+             
+        }
+        
+        
+        
+        else if(labtanı==true){
+            
+              try{
+           conn = db.connect_db()  ;
+           String sql = "INSERT INTO TANI_ISLEM (TANI_IL,TANI_ILCE, HASTANE_AD , TANI_POLIKLINIK , TANI_TARIH , DOKTOR_ID , HASTA_ID , TANI_SAAT , TANI_TEST , TANI_TESTSONUC , TANI_TANI , TANI_RECETE) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)  " ; 
+           pst = conn.prepareStatement(sql);
+           
+           
+           
+           pst.setString(1,lab_il);
+           pst.setString(2,lab_ilce);
+           pst.setString(3,lab_hastane);
+           pst.setString(4,lab_poliklinik);
+           pst.setString(5,lab_tarih);
+           pst.setString(6,lab_doktor_id);
+           pst.setString(7,lab_hasta_id);
+           pst.setString(8,lab_saat);
+           pst.setString(9,lab_test);
+           pst.setString(10,lab_testsonuc);
+           pst.setString(11,txt_tanı.getText());
+           pst.setString(12,txt_recete.getText());
+           pst.execute();
+           JOptionPane.showMessageDialog(null, "Muayene Edildi");
+           
+       }catch (Exception ex) {
+       
+           JOptionPane.showMessageDialog(null, ex);
+       
+       }finally{
+           try{
+               conn.close();
+           }catch (Exception ex) {
+               
+           }
+       } 
+            
+              
+              try{
+                  
+                  conn = db.connect_db() ;
+                  String sql = "INSERT INTO LAB_SONUCTARIHLERI (LAB_IL,LAB_ILCE, HASTANE_AD , LAB_POLIKLINIK , LAB_TARIH , DOKTOR_ID , HASTA_ID , LAB_SAAT , LAB_TEST , LAB_TESTSONUC ) VALUES (?,?,?,?,?,?,?,?,?,?) " ; 
+                  pst = conn.prepareStatement(sql); 
+                  pst.setString(1,lab_il);
+                  pst.setString(2,lab_ilce);
+                  pst.setString(3,lab_hastane);
+                  pst.setString(4,lab_poliklinik);
+                  pst.setString(5,lab_tarih);
+                  pst.setString(6,lab_doktor_id);
+                  pst.setString(7,lab_hasta_id);
+                  pst.setString(8,lab_saat);
+                  pst.setString(9,lab_test);
+                  pst.setString(10,lab_testsonuc);
+                  
+                  pst.execute();
+                  
+              }catch (Exception ex) {
+                 JOptionPane.showMessageDialog(null, ex);
+            }finally{
+                  try{
+                      conn.close();
+                  }catch (Exception ex) {
+                      
+                  }
+              }
+              
+              
+              
+              
+              try{
+                  
+                  conn = db.connect_db(); 
+                  String sql = "DELETE FROM LAB_SONUC  WHERE LAB_ID = ? "; 
+                  pst = conn.prepareStatement(sql); 
+                  
+                  pst.setString(1, lab_id);
+                  
+                  pst.execute();
+                  
+              }catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, ex);
+            }finally{
+                  try{
+                      conn.close(); 
+                  }catch (Exception ex) {
+                      
+                  }
+              }
+              
+              
+            
+        }
+        
+        
+        
+        
+        else{
+            
+        }
+        
+        
+    }
+    
+    private void btn_tanıgönderActionPerformed(java.awt.event.ActionEvent evt) {                                               
+        
+        
+        tanı();
+        onaylanantest();
+        beklenilentest();
+        tanıgecmis();
+        
+        
+        tb_doktor.setSelectedIndex(0);
+        
+        
+    }                                              
+
+    
+    
+     public void muayenetestkilit(){
+        cb_test.setEnabled(false);
+        btn_testekle.setEnabled(false);
+        btn_bitti.setEnabled(false);
+        txt_test.setEnabled(false);
+    }
+    
+    public void muayenetestkilitac(){
+        cb_test.setEnabled(true);
+        btn_testekle.setEnabled(true);
+        txt_test.setEnabled(true);
+    }
+    
+    
+    public void muayenetanıkilit(){
+        txt_tanı.setEnabled(false);
+        txt_recete.setEnabled(false);
+    }
+    
+    public void muayenetanıkilitac(){
+        txt_tanı.setEnabled(true);
+        txt_recete.setEnabled(true);
+    }
+    
+    
+    
+    private void btn_testisteActionPerformed(java.awt.event.ActionEvent evt) {                                             
+
+        muayenetestkilitac();
+        muayenetanıkilit();
+    }                                            
+
+    boolean tanı = false ; 
+    boolean labtanı = false ;
+    private void btn_tanıkoyActionPerformed(java.awt.event.ActionEvent evt) {                                            
+        boolean tanı = true ;
+        muayenetanıkilitac();
+        muayenetestkilit();
+    }                                           
+
+    private void btn_testekleActionPerformed(java.awt.event.ActionEvent evt) {                                             
+
+        txt_test.setText((String) cb_test.getSelectedItem());
+        btn_bitti.setEnabled(true);
+        
+
+    }                                            
+
+    private void btn_bittiActionPerformed(java.awt.event.ActionEvent evt) {                                          
+
+         try{
+             
+             conn = db.connect_db() ; 
+             String sql = " INSERT INTO LAB_GIRIS (LAB_IL , LAB_ILCE, HASTANE_AD,LAB_POLIKLINIK , LAB_TARIH,DOKTOR_ID , HASTA_ID , LAB_SAAT , LAB_TEST) VALUES (?,?,?,?,?,?,?,?,?)" ;
+             pst = conn.prepareStatement(sql);
+           
+             pst.setString(1, doktor_il);
+             pst.setString(2, doktor_ilce);
+             pst.setString(3, doktor_hastane);
+             pst.setString(4, doktor_poliklinik);
+             pst.setString(5, doktor_tarih);
+             pst.setString(6, doktor_id);
+             pst.setString(7, hasta_id);
+             pst.setString(8, doktor_saat);
+             pst.setString(9, txt_test.getText());
+             
+             pst.execute();
+
+             JOptionPane.showMessageDialog(null, "TEST İŞLEMİNİZ LABORATUVARA GÖNDERİLDİ");
+             
+         }catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, ex);
+        }finally{
+             try{
+                 conn.close();
+             }catch (Exception ex) {
+                 
+             }
+         }
+         
+         
+         try{
+                conn=db.connect_db();
+                String sql = "INSERT INTO GECMİS_RANDEVU (GECMİS_IL,GECMİS_ILCE,HASTANE_AD,GECMİS_POLIKLINIK,GECMİS_TARIH,DOKTOR_ID,HASTA_ID,GECMİS_SAAT) VALUES (?,?,?,?,?,?,?,?)" ;
+                pst = conn.prepareStatement(sql);
+              pst.setString(1, doktor_il);
+             pst.setString(2, doktor_ilce);
+             pst.setString(3, doktor_hastane);
+             pst.setString(4, doktor_poliklinik);
+             pst.setString(5, doktor_tarih);
+             pst.setString(6, doktor_id);
+             pst.setString(7, hasta_id);
+             pst.setString(8, doktor_saat);
+                pst.execute();
+                gecmisrandevu();
+            }
+            catch (Exception ex) {
+                   JOptionPane.showMessageDialog(null,ex );
+            }
+            finally{
+                try{
+                    conn.close();
+                }catch (Exception ex) {
+
+                }
+            }
+         
+         
+         try{
+             
+             conn = db.connect_db(); 
+             String sql = "DELETE FROM RANDEVU_ISLEM WHERE RANDEVU_ID = ? "; 
+             pst = conn.prepareStatement(sql); 
+             
+             pst.setString(1,randevu_id);
+             
+             pst.execute() ; 
+             muayene_aktifrandevu();
+             
+             
+         }catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, ex);
+        }finally{
+             try{
+                 conn.close();
+             }catch (Exception ex) {
+                 
+             }
+         }
+         
+         
+         
+         
+         
+         
+         tb_doktor.setSelectedIndex(0);
+        
+        
+        
+        
+
+    }                                         
+
+    String lab_id;
+    String lab_il;
+    String lab_ilce;
+    String lab_hastane;
+    String lab_poliklinik;
+    String lab_tarih;
+    String lab_doktor_id;
+    String lab_hasta_id;
+    String lab_saat;
+    String lab_test;
+    String lab_testsonuc;
+    
+    
+    private void tbl_labonaylanantestMouseClicked(java.awt.event.MouseEvent evt) {                                                  
+
+          String data []=new String [onaylanansutun];
+        for (int i = 0; i <onaylanansutun ; i++) {
+            data [i]=tbl_labonaylanantest.getValueAt(tbl_labonaylanantest.getSelectedRow(),i ).toString();
+            System.out.println(data[i]);
+        }
+        
+        lab_id = data[0];
+        lab_il = data[1];
+        lab_ilce = data[2];
+        lab_hastane = data[3];
+        lab_poliklinik= data[4];
+        lab_tarih = data[5];
+        lab_doktor_id = data[6];
+        lab_hasta_id = data[7];
+        lab_saat = data[8];
+        lab_test = data[9] ; 
+        lab_testsonuc = data[10];
+        
+        
+                txt_lab_hasta.setText(data[7]);
+        
+        
+        
+    }                                                 
+
+    private void btn_lab_sonucActionPerformed(java.awt.event.ActionEvent evt) {                                              
+        
+        int h_idd = Integer.valueOf(lab_hasta_id);
+        int d_idd = Integer.valueOf(lab_doktor_id);
+        
+        if (h_idd!=0 && d_idd!=0) {
+        labtanı = true ; 
+        btn_testiste.setEnabled(false);
+        btn_tanıkoy.setEnabled(false);
+        muayenetestkilit();
+        muayenetanıkilitac();
+        hastabilgi(Integer.valueOf(lab_hasta_id));
+        doktorbilgi(Integer.valueOf(lab_doktor_id));
+        
+        tb_doktor.setSelectedIndex(5);
+            
+        }
+        
+        else{
+            JOptionPane.showMessageDialog(null, "Lütfen bir hasta seçiniz");
+        }
+        
+    }                                             
+
+    private void tbl_gecmistanıMouseClicked(java.awt.event.MouseEvent evt) {                                            
+        // TODO add your handling code here:
+    }                                           
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(Doktor_Ana_Ekran.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(Doktor_Ana_Ekran.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(Doktor_Ana_Ekran.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(Doktor_Ana_Ekran.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new Doktor_Ana_Ekran().setVisible(true);
+            }
+        });
+    }
+
+    // Variables declaration - do not modify                     
+    private javax.swing.JButton btn3;
+    private javax.swing.JButton btn_anasayfa;
+    private javax.swing.JButton btn_ara;
+    private javax.swing.JButton btn_bitti;
+    private javax.swing.JButton btn_cıkıs;
+    private javax.swing.JButton btn_lab_sonuc;
+    private javax.swing.JButton btn_labaratuvar;
+    private javax.swing.JButton btn_muayene;
+    private javax.swing.JButton btn_profil;
+    private javax.swing.JButton btn_randevu;
+    private javax.swing.JButton btn_sonuc;
+    private javax.swing.JButton btn_tanıgönder;
+    private javax.swing.JButton btn_tanıkoy;
+    private javax.swing.JButton btn_testekle;
+    private javax.swing.JButton btn_testiste;
+    private javax.swing.JComboBox<String> cb_test;
+    private javax.swing.JButton jButton5;
+    private javax.swing.JButton jButton9;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel15;
+    private javax.swing.JLabel jLabel16;
+    private javax.swing.JLabel jLabel17;
+    private javax.swing.JLabel jLabel18;
+    private javax.swing.JLabel jLabel19;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel20;
+    private javax.swing.JLabel jLabel21;
+    private javax.swing.JLabel jLabel22;
+    private javax.swing.JLabel jLabel23;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel10;
+    private javax.swing.JPanel jPanel11;
+    private javax.swing.JPanel jPanel12;
+    private javax.swing.JPanel jPanel13;
+    private javax.swing.JPanel jPanel14;
+    private javax.swing.JPanel jPanel15;
+    private javax.swing.JPanel jPanel16;
+    private javax.swing.JPanel jPanel17;
+    private javax.swing.JPanel jPanel18;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel20;
+    private javax.swing.JPanel jPanel21;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
+    private javax.swing.JPanel jPanel7;
+    private javax.swing.JPanel jPanel8;
+    private javax.swing.JPanel jPanel9;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JScrollPane jScrollPane6;
+    private javax.swing.JScrollPane jScrollPane9;
+    private javax.swing.JTabbedPane jTabbedPane2;
+    private javax.swing.JTabbedPane tb_doktor;
+    private javax.swing.JTable tbl_aktifrandevu;
+    private javax.swing.JTable tbl_gecmisrandevu;
+    private javax.swing.JTable tbl_gecmistanı;
+    private javax.swing.JTable tbl_labbeklenilentest;
+    private javax.swing.JTable tbl_labonaylanantest;
+    private javax.swing.JTable tbl_muayene_aktifrandevu;
+    private javax.swing.JTabbedPane tbl_tanıgecmis;
+    private javax.swing.JTextField txt_adsoyad;
+    private javax.swing.JTextField txt_hb_ad;
+    private javax.swing.JTextField txt_hb_adres;
+    private javax.swing.JTextField txt_hb_dogumtarihi;
+    private javax.swing.JTextField txt_hb_email;
+    private javax.swing.JTextField txt_hb_poliklinik;
+    private javax.swing.JTextField txt_hb_soyad;
+    private javax.swing.JTextField txt_hb_telefon;
+    private javax.swing.JTextField txt_lab_hasta;
+    private javax.swing.JTextField txt_mhb_dad;
+    private javax.swing.JTextField txt_mhb_dpoliklinik;
+    private javax.swing.JTextField txt_mhb_dsoyad;
+    private javax.swing.JTextField txt_mhb_had;
+    private javax.swing.JTextField txt_mhb_hcinsiyet;
+    private javax.swing.JTextField txt_mhb_hdogumtarihi;
+    private javax.swing.JTextField txt_mhb_hsoyad;
+    private javax.swing.JTextField txt_mhb_htc;
+    private javax.swing.JTextField txt_muayeneid;
+    private javax.swing.JTextField txt_recete;
+    private javax.swing.JTextField txt_tanı;
+    private javax.swing.JTextField txt_tcsorgula;
+    private javax.swing.JTextField txt_test;
+    // End of variables declaration                   
+}
