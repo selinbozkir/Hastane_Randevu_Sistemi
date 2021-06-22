@@ -1,0 +1,899 @@
+
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/**
+ *
+ * @author eren5
+ */
+public class Lab_Ana_Ekran extends javax.swing.JFrame {
+
+    /**
+     * Creates new form Lab_Ana_Ekran
+     */
+    
+    public Lab_Ana_Ekran() {
+        initComponents();
+        
+        beklenilentest();
+        onaylanantest();
+        gecmistest();
+        
+    }
+   
+    public Lab_Ana_Ekran(String sql) {
+        initComponents();
+        
+            beklenilentest();
+        onaylanantest();
+        gecmistest();
+        Toolkit toolkit=getToolkit();
+        Dimension size=toolkit.getScreenSize();
+        setLocation(size.width/2-getWidth()/2,size.height/2-getHeight()/2);
+    }
+    
+          Connection conn = null ; PreparedStatement pst = null ; ResultSet rs = null ;
+
+    
+    
+    
+    int onaylanansutun;
+      void onaylanantest(){
+        
+        try{
+        
+            DefaultTableModel tbl = (DefaultTableModel) tbl_onaylanantest.getModel();
+            
+            while (tbl.getRowCount() > 0) {
+                // eğer ki tabloda 1 satır bile veri varsa sorgusu yaptık
+                tbl.removeRow(0);  // tüm satırları sil dedik 
+            }
+            
+            //veritabanı işlemleri 
+            
+            conn = db.connect_db();
+            String sql = "SELECT * FROM LAB_SONUC " ; 
+            pst = conn.prepareStatement(sql);
+            rs = pst.executeQuery();
+            
+            ResultSetMetaData rsmd = rs.getMetaData(); 
+             onaylanansutun = rsmd.getColumnCount(); 
+            String[] data = new String[onaylanansutun]; 
+          
+            while(rs.next()){
+              
+                
+                 for (int i = 0; i < data.length; i++) {
+                  data[i] = rs.getString(i+1);
+
+        
+              }
+           
+                 DefaultTableModel tblModel = (DefaultTableModel) tbl_onaylanantest.getModel(); 
+                 tblModel.addRow(data); // verileri ekledik 
+          
+            }  
+          
+        }catch (Exception ex) {
+            
+        }finally{
+            try{
+                conn.close();
+            }catch (Exception ex) {
+                
+            }
+        }
+        
+        
+    }
+      
+      
+      
+      
+      
+      
+        int beklenilensutun = 0 ; 
+        void beklenilentest(){
+        
+        try{
+        
+            DefaultTableModel tbl = (DefaultTableModel) tbl_beklenilentest.getModel();
+            
+            while (tbl.getRowCount() > 0) {
+                // eğer ki tabloda 1 satır bile veri varsa sorgusu yaptık
+                tbl.removeRow(0);  // tüm satırları sil dedik 
+            }
+            
+            //veritabanı işlemleri 
+            
+            conn = db.connect_db();
+            String sql = "SELECT * FROM LAB_GIRIS "; 
+            pst = conn.prepareStatement(sql);
+            rs = pst.executeQuery();
+            
+            ResultSetMetaData rsmd = rs.getMetaData(); 
+            beklenilensutun = rsmd.getColumnCount(); 
+            String[] data = new String[beklenilensutun]; 
+          
+            while(rs.next()){
+              
+                
+                 for (int i = 0; i < data.length; i++) {
+                  data[i] = rs.getString(i+1);
+
+        
+              }
+           
+                 DefaultTableModel tblModel = (DefaultTableModel) tbl_beklenilentest.getModel(); 
+                 tblModel.addRow(data); // verileri ekledik 
+          
+            }  
+          
+        }catch (Exception ex) {
+            
+        }finally{
+            try{
+                conn.close();
+            }catch (Exception ex) {
+                
+            }
+        }
+        
+        
+    }
+    
+    
+    
+    
+        int gecmissutun = 0 ; 
+        void gecmistest(){
+        
+        try{
+        
+            DefaultTableModel tbl = (DefaultTableModel) tbl_gecmistest.getModel();
+            
+            while (tbl.getRowCount() > 0) {
+                // eğer ki tabloda 1 satır bile veri varsa sorgusu yaptık
+                tbl.removeRow(0);  // tüm satırları sil dedik 
+            }
+            
+            //veritabanı işlemleri 
+            
+            conn = db.connect_db();
+            String sql = "SELECT * FROM LAB_SONUCTARIHLERI "; 
+            pst = conn.prepareStatement(sql);
+            rs = pst.executeQuery();
+            
+            ResultSetMetaData rsmd = rs.getMetaData(); 
+            gecmissutun = rsmd.getColumnCount(); 
+            String[] data = new String[gecmissutun]; 
+          
+            while(rs.next()){
+              
+                
+                 for (int i = 0; i < data.length; i++) {
+                  data[i] = rs.getString(i+1);
+
+        
+              }
+           
+                 DefaultTableModel tblModel = (DefaultTableModel) tbl_gecmistest.getModel(); 
+                 tblModel.addRow(data); // verileri ekledik 
+          
+            }  
+          
+        }catch (Exception ex) {
+            
+        }finally{
+            try{
+                conn.close();
+            }catch (Exception ex) {
+                
+            }
+        }
+        
+        
+    }
+        
+        
+        
+        
+        
+        
+        
+        
+       int  h_id ; 
+      public void tc_id(){
+
+          try{
+              
+              conn = db.connect_db() ; 
+              String sql = "SELECT * FROM HASTA WHERE TC = '" + txt_tcsorgula.getText()+ "'" ;
+              pst   = conn.prepareStatement(sql); 
+              rs = pst.executeQuery() ; 
+              
+              while(rs.next()) {
+                  
+                  h_id =Integer.valueOf(rs.getString("HASTA_ID")) ;
+                  System.out.println("id :  : " + h_id);
+                  
+                  
+              }
+              
+              
+              
+          }catch (Exception ex) {
+              JOptionPane.showMessageDialog(null, ex);
+          }finally{
+              try{
+                  conn.close();
+              }catch (Exception ex) {
+                  
+              }
+          }
+          
+          
+      }
+     
+      
+      
+      
+      void tc_sorgu(){
+          
+                tc_id();
+                System.out.println(" id : ::  " + h_id);
+          
+        try{
+        
+            DefaultTableModel tbl = (DefaultTableModel) tbl_gecmistest.getModel();
+            
+            while (tbl.getRowCount() > 0) {
+                // eğer ki tabloda 1 satır bile veri varsa sorgusu yaptık
+                tbl.removeRow(0);  // tüm satırları sil dedik 
+            }
+            
+            //veritabanı işlemleri 
+            
+            conn = db.connect_db();
+            String sql = "SELECT * FROM LAB_SONUCTARIHLARI WHERE HASTA_ID = '" + h_id + " "; 
+            pst = conn.prepareStatement(sql);
+            rs = pst.executeQuery();
+            
+            ResultSetMetaData rsmd = rs.getMetaData(); 
+            gecmissutun = rsmd.getColumnCount(); 
+            String[] data = new String[gecmissutun]; 
+          
+            while(rs.next()){
+              
+                
+                 for (int i = 0; i < data.length; i++) {
+                  data[i] = rs.getString(i+1);
+
+        
+              }
+           
+                 DefaultTableModel tblModel = (DefaultTableModel) tbl_gecmistest.getModel(); 
+                 tblModel.addRow(data); // verileri ekledik 
+          
+            }  
+          
+        }catch (Exception ex) {
+            
+        }finally{
+            try{
+                conn.close();
+            }catch (Exception ex) {
+                
+            }
+        }
+        
+        
+    }
+        
+        
+        
+        
+        
+        
+        
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
+    private void initComponents() {
+
+        jPanel1 = new javax.swing.JPanel();
+        btn_cıkıs = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
+        tp = new javax.swing.JTabbedPane();
+        jPanel3 = new javax.swing.JPanel();
+        jPanel12 = new javax.swing.JPanel();
+        jPanel19 = new javax.swing.JPanel();
+        jScrollPane9 = new javax.swing.JScrollPane();
+        tbl_beklenilentest = new javax.swing.JTable();
+        jLabel30 = new javax.swing.JLabel();
+        jLabel31 = new javax.swing.JLabel();
+        txt_labtest = new javax.swing.JTextField();
+        txt_labhid = new javax.swing.JTextField();
+        jLabel32 = new javax.swing.JLabel();
+        txt_labtarih = new javax.swing.JTextField();
+        jLabel33 = new javax.swing.JLabel();
+        txt_labsonuc = new javax.swing.JTextField();
+        btn_testgönder1 = new javax.swing.JButton();
+        jPanel5 = new javax.swing.JPanel();
+        jScrollPane11 = new javax.swing.JScrollPane();
+        tbl_onaylanantest = new javax.swing.JTable();
+        jPanel4 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+        jPanel10 = new javax.swing.JPanel();
+        jLabel10 = new javax.swing.JLabel();
+        txt_tcsorgula = new javax.swing.JTextField();
+        btn_ara1 = new javax.swing.JButton();
+        jScrollPane10 = new javax.swing.JScrollPane();
+        tbl_gecmistest = new javax.swing.JTable();
+        jButton4 = new javax.swing.JButton();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jPanel1.setBackground(new java.awt.Color(204, 204, 204));
+        jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        btn_cıkıs.setBackground(new java.awt.Color(204, 204, 204));
+        btn_cıkıs.setFont(new java.awt.Font("Dialog", 1, 15)); // NOI18N
+        btn_cıkıs.setForeground(new java.awt.Color(51, 204, 255));
+        btn_cıkıs.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Resimler/exit.png"))); // NOI18N
+        btn_cıkıs.setText("Çıkış");
+        btn_cıkıs.setBorder(null);
+        btn_cıkıs.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_cıkısActionPerformed(evt);
+            }
+        });
+        jPanel1.add(btn_cıkıs, new org.netbeans.lib.awtextra.AbsoluteConstraints(1057, 9, 130, 54));
+
+        jButton1.setFont(new java.awt.Font("Dialog", 1, 24)); // NOI18N
+        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Resimler/exam (2).png"))); // NOI18N
+        jButton1.setText("İstenilen Testler");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        jPanel1.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(94, 6, -1, 54));
+
+        jButton2.setFont(new java.awt.Font("Dialog", 1, 24)); // NOI18N
+        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Resimler/sent.png"))); // NOI18N
+        jButton2.setText("Gönderilmiş Testler ");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+        jPanel1.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(361, 6, -1, 54));
+
+        jPanel3.setBackground(new java.awt.Color(204, 204, 204));
+
+        jPanel19.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "BEKLENİLEN TESTLER \n", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 18), new java.awt.Color(0, 0, 0))); // NOI18N
+
+        tbl_beklenilentest.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "LAB_ID", "İL", "İLÇE", "HASTANE", "POLİKLİNİK", "TARİH", "DOKTOR_İD", "HASTA_İD", "SAAT", "TEST"
+            }
+        ));
+        tbl_beklenilentest.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tbl_beklenilentestMouseClicked(evt);
+            }
+        });
+        jScrollPane9.setViewportView(tbl_beklenilentest);
+
+        jLabel30.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jLabel30.setText("Seçilen Test : ");
+
+        jLabel31.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jLabel31.setText("Hasta ID : ");
+
+        txt_labtest.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+
+        txt_labhid.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+
+        jLabel32.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jLabel32.setText("Tarih : ");
+
+        txt_labtarih.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+
+        jLabel33.setText("TEST SONUCU ");
+
+        btn_testgönder1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Resimler/send.png"))); // NOI18N
+        btn_testgönder1.setText("TESTİ GÖNDER ");
+        btn_testgönder1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_testgönder1ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel19Layout = new javax.swing.GroupLayout(jPanel19);
+        jPanel19.setLayout(jPanel19Layout);
+        jPanel19Layout.setHorizontalGroup(
+            jPanel19Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel19Layout.createSequentialGroup()
+                .addGap(89, 89, 89)
+                .addGroup(jPanel19Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel32)
+                    .addComponent(jLabel30)
+                    .addComponent(jLabel31))
+                .addGap(32, 32, 32)
+                .addGroup(jPanel19Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(txt_labtest)
+                    .addComponent(txt_labhid)
+                    .addComponent(txt_labtarih, javax.swing.GroupLayout.DEFAULT_SIZE, 163, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 365, Short.MAX_VALUE)
+                .addGroup(jPanel19Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel19Layout.createSequentialGroup()
+                        .addComponent(jLabel33)
+                        .addGap(223, 223, 223))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel19Layout.createSequentialGroup()
+                        .addComponent(txt_labsonuc, javax.swing.GroupLayout.PREFERRED_SIZE, 186, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(163, 163, 163))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel19Layout.createSequentialGroup()
+                        .addComponent(btn_testgönder1)
+                        .addGap(195, 195, 195))))
+            .addComponent(jScrollPane9)
+        );
+        jPanel19Layout.setVerticalGroup(
+            jPanel19Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel19Layout.createSequentialGroup()
+                .addGroup(jPanel19Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel19Layout.createSequentialGroup()
+                        .addComponent(jScrollPane9, javax.swing.GroupLayout.PREFERRED_SIZE, 326, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(42, 42, 42)
+                        .addGroup(jPanel19Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel30)
+                            .addComponent(txt_labtest, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel19Layout.createSequentialGroup()
+                        .addComponent(jLabel33)
+                        .addGap(32, 32, 32)))
+                .addGroup(jPanel19Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel32)
+                    .addComponent(txt_labtarih, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txt_labsonuc, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel19Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel19Layout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel19Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel31)
+                            .addComponent(txt_labhid, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(jPanel19Layout.createSequentialGroup()
+                        .addGap(29, 29, 29)
+                        .addComponent(btn_testgönder1)))
+                .addGap(0, 35, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout jPanel12Layout = new javax.swing.GroupLayout(jPanel12);
+        jPanel12.setLayout(jPanel12Layout);
+        jPanel12Layout.setHorizontalGroup(
+            jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel12Layout.createSequentialGroup()
+                .addContainerGap(586, Short.MAX_VALUE)
+                .addComponent(jPanel19, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+        jPanel12Layout.setVerticalGroup(
+            jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel12Layout.createSequentialGroup()
+                .addGap(33, 33, 33)
+                .addComponent(jPanel19, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(69, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(412, Short.MAX_VALUE))
+        );
+
+        tp.addTab("Beklenen Testler", jPanel3);
+
+        jPanel5.setBackground(new java.awt.Color(204, 204, 204));
+
+        tbl_onaylanantest.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "LAB_ID", "İL", "İLÇE", "HASTANE", "POLİKLİNİK", "TARİH", "DOKTOR_İD", "HASTA_İD", "SAAT", "TEST", "TEST SONUCU"
+            }
+        ));
+        jScrollPane11.setViewportView(tbl_onaylanantest);
+
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
+                .addContainerGap(544, Short.MAX_VALUE)
+                .addComponent(jScrollPane11, javax.swing.GroupLayout.PREFERRED_SIZE, 1148, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addGap(23, 23, 23)
+                .addComponent(jScrollPane11, javax.swing.GroupLayout.PREFERRED_SIZE, 457, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(724, Short.MAX_VALUE))
+        );
+
+        tp.addTab("Onaylanan Testler", jPanel5);
+
+        jPanel4.setBackground(new java.awt.Color(204, 204, 204));
+
+        jPanel10.setBackground(new java.awt.Color(204, 204, 204));
+        jPanel10.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "HASTA ARAMA ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 18), new java.awt.Color(0, 0, 0))); // NOI18N
+
+        jLabel10.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
+        jLabel10.setForeground(new java.awt.Color(0, 0, 0));
+        jLabel10.setText("Hasta TC : ");
+
+        txt_tcsorgula.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txt_tcsorgulaActionPerformed(evt);
+            }
+        });
+
+        btn_ara1.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        btn_ara1.setForeground(new java.awt.Color(0, 0, 0));
+        btn_ara1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Resimler/loupe (1).png"))); // NOI18N
+        btn_ara1.setText("ARA");
+        btn_ara1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_ara1ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel10Layout = new javax.swing.GroupLayout(jPanel10);
+        jPanel10.setLayout(jPanel10Layout);
+        jPanel10Layout.setHorizontalGroup(
+            jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel10Layout.createSequentialGroup()
+                .addGap(142, 142, 142)
+                .addComponent(jLabel10)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txt_tcsorgula, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btn_ara1, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(597, Short.MAX_VALUE))
+        );
+        jPanel10Layout.setVerticalGroup(
+            jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel10Layout.createSequentialGroup()
+                .addGap(61, 61, 61)
+                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel10)
+                    .addComponent(txt_tcsorgula, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btn_ara1))
+                .addContainerGap(123, Short.MAX_VALUE))
+        );
+
+        tbl_gecmistest.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "LAB_ID", "İL", "İLÇE", "HASTANE", "POLİKLİNİK", "TARİH", "DOKTOR_İD", "HASTA_İD", "SAAT", "TEST", "TEST SONUCU"
+            }
+        ));
+        jScrollPane10.setViewportView(tbl_gecmistest);
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane10)
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(30, 30, 30)
+                .addComponent(jScrollPane10, javax.swing.GroupLayout.PREFERRED_SIZE, 326, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(593, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
+                .addContainerGap(594, Short.MAX_VALUE)
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(39, 39, 39))
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+
+        tp.addTab("Geçmiş Testler", jPanel4);
+
+        jPanel1.add(tp, new org.netbeans.lib.awtextra.AbsoluteConstraints(-550, 70, 1700, 1230));
+
+        jButton4.setFont(new java.awt.Font("Dialog", 1, 24)); // NOI18N
+        jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Resimler/return-to-the-past.png"))); // NOI18N
+        jButton4.setText("Geçmiş Testler ");
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
+        jPanel1.add(jButton4, new org.netbeans.lib.awtextra.AbsoluteConstraints(678, 6, 264, 54));
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 1204, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
+
+        pack();
+    }// </editor-fold>                        
+
+    private void btn_cıkısActionPerformed(java.awt.event.ActionEvent evt) {                                          
+
+        new HRS().setVisible(true);
+        this.hide();
+    }                                         
+
+    private void btn_testgönder1ActionPerformed(java.awt.event.ActionEvent evt) {                                                
+
+         if (!txt_labsonuc.getText().equals("")) {
+            try{
+                conn = db.connect_db() ; 
+                String sql = " INSERT INTO LAB_SONUC (LAB_IL , LAB_ILCE , HASTANE_AD, LAB_POLIKLINIK , LAB_TARIH , DOKTOR_ID , HASTA_ID , LAB_SAAT , LAB_TEST , LAB_TESTSONUC ) VALUES (?,?,?,?,?,?,?,?,?,?)  "  ; 
+                pst = conn.prepareStatement(sql) ; 
+                pst.setString(1, beklenilen_il);
+                pst.setString(2, beklenilen_ilce);
+                pst.setString(3, beklenilen_hastane);
+                pst.setString(4, beklenilen_poliklinik);
+                pst.setString(5, beklenilen_tarih);
+                pst.setString(6, beklenilen_doktor_id);
+                pst.setString(7, beklenilen_hasta_id);
+                pst.setString(8, beklenilen_saat);
+                pst.setString(9, beklenilen_test);
+                pst.setString(10, txt_labsonuc.getText());
+
+                pst.execute() ; 
+                onaylanantest();
+                gecmistest();
+                JOptionPane.showMessageDialog(null, "Test sonuçları doktora gönderildi ");
+
+
+            }catch (Exception ex) {
+                JOptionPane.showMessageDialog(null , ex);
+            }finally{
+                try{
+                    conn.close();
+                }catch (Exception ex) {
+
+                }
+            }
+            
+            
+            try{
+                
+                conn = db.connect_db() ; 
+                String sql = "DELETE FROM LAB_GIRIS WHERE LAB_ID = ? " ;  
+                pst  = conn.prepareStatement(sql);
+                
+                pst.setString(1,beklenilen_id);
+                
+                pst.execute() ;
+                beklenilentest();
+                
+                
+            }catch (Exception ex) {
+                 JOptionPane.showMessageDialog(null, ex);
+             }finally{
+                try{
+                    conn.close(); 
+                }catch (Exception ex) {
+                    
+                }
+            }
+            
+            
+             
+         }
+         
+         else {
+             JOptionPane.showMessageDialog(null, "Test sonucu giriniz");
+         }
+
+    }                                               
+
+    private void txt_tcsorgulaActionPerformed(java.awt.event.ActionEvent evt) {                                              
+
+        tc_id();
+    }                                             
+
+    private void btn_ara1ActionPerformed(java.awt.event.ActionEvent evt) {                                         
+
+        tc_sorgu();
+    }                                        
+
+    String beklenilen_id ; 
+    String beklenilen_il ; 
+    String beklenilen_ilce ; 
+    String beklenilen_hastane ; 
+    String beklenilen_poliklinik ; 
+    String beklenilen_tarih ; 
+    String beklenilen_doktor_id; 
+    String beklenilen_hasta_id ; 
+    String beklenilen_saat ; 
+    String beklenilen_test ; 
+    
+    private void tbl_beklenilentestMouseClicked(java.awt.event.MouseEvent evt) {                                                
+
+        String data []=new String [beklenilensutun];
+        for (int i = 0; i <beklenilensutun ; i++) {
+            data [i]=tbl_beklenilentest.getValueAt(tbl_beklenilentest.getSelectedRow(),i ).toString();
+            System.out.println(data[i]);
+        }
+        
+        beklenilen_id = data[0];
+        beklenilen_il = data[1];
+        beklenilen_ilce = data[2];
+        beklenilen_hastane = data[3];
+        beklenilen_poliklinik= data[4];
+        beklenilen_tarih = data[5];
+        beklenilen_doktor_id = data[6];
+        beklenilen_hasta_id = data[7];
+        beklenilen_saat = data[8];
+        beklenilen_test = data[9];
+        
+                txt_labtest.setText(data[9]);
+                txt_labtarih.setText(data[5]);
+                txt_labhid.setText(data[7]);
+        
+        
+        
+        
+    }                                               
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {                                         
+
+        tp.setSelectedIndex(0);
+        
+        beklenilentest();
+        onaylanantest();
+        gecmistest();
+        
+    }                                        
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {                                         
+
+        tp.setSelectedIndex(1);
+        
+        beklenilentest();
+        onaylanantest();
+        gecmistest();
+        
+    }                                        
+
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {                                         
+
+        tp.setSelectedIndex(2);
+        
+        beklenilentest();
+        onaylanantest();
+        gecmistest();
+        
+    }                                        
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(Lab_Ana_Ekran.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(Lab_Ana_Ekran.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(Lab_Ana_Ekran.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(Lab_Ana_Ekran.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new Lab_Ana_Ekran().setVisible(true);
+            }
+        });
+    }
+
+    // Variables declaration - do not modify                     
+    private javax.swing.JButton btn_ara1;
+    private javax.swing.JButton btn_cıkıs;
+    private javax.swing.JButton btn_testgönder1;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton4;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel30;
+    private javax.swing.JLabel jLabel31;
+    private javax.swing.JLabel jLabel32;
+    private javax.swing.JLabel jLabel33;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel10;
+    private javax.swing.JPanel jPanel12;
+    private javax.swing.JPanel jPanel19;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JScrollPane jScrollPane10;
+    private javax.swing.JScrollPane jScrollPane11;
+    private javax.swing.JScrollPane jScrollPane9;
+    private javax.swing.JTable tbl_beklenilentest;
+    private javax.swing.JTable tbl_gecmistest;
+    private javax.swing.JTable tbl_onaylanantest;
+    private javax.swing.JTabbedPane tp;
+    private javax.swing.JTextField txt_labhid;
+    private javax.swing.JTextField txt_labsonuc;
+    private javax.swing.JTextField txt_labtarih;
+    private javax.swing.JTextField txt_labtest;
+    private javax.swing.JTextField txt_tcsorgula;
+    // End of variables declaration                   
+}
